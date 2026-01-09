@@ -1,0 +1,156 @@
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+    <title>Xenon Profile</title>
+    <script src="https://telegram.org/js/telegram-web-app.js"></script>
+    <style>
+        @import url('https://fonts.googleapis.com/css2?family=Rajdhani:wght@500;700&family=Inter:wght@400;600&display=swap');
+
+        :root {
+            --bg: #050505;
+            --card: #0f0f11;
+            --border: #27272a;
+            --accent: #3b82f6;
+            --text: #ffffff;
+            --gray: #9ca3af;
+        }
+
+        body {
+            background-color: var(--bg);
+            color: var(--text);
+            font-family: 'Inter', sans-serif;
+            margin: 0; padding: 0;
+            min-height: 100vh;
+            background-image: radial-gradient(circle at 50% -10%, #1e1b4b 0%, #000000 60%);
+            display: flex; flex-direction: column; align-items: center;
+        }
+
+        .container { width: 100%; max-width: 400px; padding: 20px; box-sizing: border-box; }
+
+        /* AVATAR SECTION */
+        .profile-header {
+            display: flex; flex-direction: column; align-items: center;
+            margin-top: 30px; margin-bottom: 30px;
+        }
+
+        .avatar-ring {
+            width: 100px; height: 100px;
+            border-radius: 50%;
+            padding: 3px;
+            background: linear-gradient(135deg, #3b82f6, #8b5cf6, #ec4899);
+            animation: spin 4s linear infinite;
+            display: flex; justify-content: center; align-items: center;
+        }
+        
+        @keyframes spin { 100% { filter: hue-rotate(360deg); } }
+
+        .avatar {
+            width: 100%; height: 100%;
+            background: #111; border-radius: 50%;
+            display: flex; align-items: center; justify-content: center;
+            font-family: 'Rajdhani', sans-serif; font-size: 40px; font-weight: 700;
+            color: #fff; text-transform: uppercase;
+            box-shadow: inset 0 0 20px rgba(0,0,0,0.8);
+        }
+
+        .username { margin-top: 15px; font-size: 22px; font-weight: 700; font-family: 'Rajdhani', sans-serif; letter-spacing: 1px; }
+        .userid { font-size: 12px; color: var(--gray); margin-top: 5px; font-family: 'JetBrains Mono', monospace; }
+
+        /* STATS GRID */
+        .stats-grid {
+            display: grid; grid-template-columns: 1fr 1fr; gap: 15px;
+            width: 100%; margin-bottom: 20px;
+        }
+
+        .stat-card {
+            background: rgba(255, 255, 255, 0.03);
+            border: 1px solid var(--border);
+            border-radius: 16px; padding: 15px;
+            display: flex; flex-direction: column; align-items: center;
+            backdrop-filter: blur(10px);
+        }
+
+        .stat-value { font-family: 'Rajdhani', sans-serif; font-size: 24px; font-weight: 700; color: #fff; }
+        .stat-label { font-size: 11px; color: var(--gray); text-transform: uppercase; margin-top: 5px; letter-spacing: 1px; }
+
+        .balance { color: #22c55e; text-shadow: 0 0 10px rgba(34, 197, 94, 0.3); }
+
+        /* LIST */
+        .menu-list { width: 100%; display: flex; flex-direction: column; gap: 10px; }
+        .menu-item {
+            background: var(--card); border: 1px solid var(--border);
+            padding: 16px; border-radius: 12px;
+            display: flex; justify-content: space-between; align-items: center;
+            font-size: 14px; font-weight: 600;
+            transition: 0.2s;
+        }
+        .menu-item:active { transform: scale(0.98); background: rgba(255,255,255,0.05); }
+        .arrow { color: var(--gray); font-size: 18px; }
+        
+        .logout { border-color: rgba(239, 68, 68, 0.3); color: #ef4444; margin-top: 20px; justify-content: center; }
+
+    </style>
+</head>
+<body>
+
+    <div class="container">
+        
+        <div class="profile-header">
+            <div class="avatar-ring">
+                <div class="avatar" id="avatar">X</div>
+            </div>
+            <div class="username" id="username">Guest</div>
+            <div class="userid" id="userid">ID: 00000000</div>
+        </div>
+
+        <div class="stats-grid">
+            <div class="stat-card">
+                <div class="stat-value balance" id="balance">0₽</div>
+                <div class="stat-label">Баланс</div>
+            </div>
+            <div class="stat-card">
+                <div class="stat-value" id="purchases">0</div>
+                <div class="stat-label">Покупок</div>
+            </div>
+        </div>
+
+        <div class="menu-list">
+            <div class="menu-item">
+                <span>📅 Дата регистрации</span>
+                <span style="color: #9ca3af; font-size: 12px;" id="reg-date">09.01.2026</span>
+            </div>
+            <div class="menu-item">
+                <span>🛡 Статус</span>
+                <span style="color: #3b82f6; font-size: 12px; font-weight:bold;">User</span>
+            </div>
+            
+            <div class="menu-item logout" onclick="window.Telegram.WebApp.close()">
+                ЗАКРЫТЬ ПРОФИЛЬ
+            </div>
+        </div>
+
+    </div>
+
+<script>
+    const tg = window.Telegram.WebApp;
+    tg.expand();
+    tg.ready();
+
+    // Заполнение данных
+    const user = tg.initDataUnsafe.user;
+    if (user) {
+        document.getElementById('username').innerText = user.first_name + (user.last_name ? ' ' + user.last_name : '');
+        document.getElementById('userid').innerText = `ID: ${user.id}`;
+        const initial = user.first_name ? user.first_name[0] : 'X';
+        document.getElementById('avatar').innerText = initial.toUpperCase();
+    }
+
+    // Рандомная дата регистрации для красоты (или текущая)
+    const today = new Date();
+    document.getElementById('reg-date').innerText = today.toLocaleDateString();
+
+</script>
+</body>
+</html>
